@@ -1,0 +1,6 @@
+## Set Preliminaries
+data_loc="~/Projects/Data/Climate-Change-Analysis"
+
+## Load in Data
+
+city_data <- read.csv(paste(data_loc, "/GlobalLandTemperaturesByCity.csv", sep = ""))
