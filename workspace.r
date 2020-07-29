@@ -27,23 +27,24 @@ head(city_data)
 ## There are records for several thousand cities here, each with regular monthly average
 ## temperature and uncertainty readings. It will be easier to focus on one city to begin with.
 
-minsk_data_base <- city_data[city_data[,"City"]=="Minsk",]
-head(minsk_data_base)
+minsk_data_init <- city_data[city_data[,"City"]=="Minsk",]
+head(minsk_data_init)
 
 ## There are already visible entries with missing data
 
-minsk_data_missing = minsk_data_base[is.na(minsk_data_base[,"AverageTemperature"]) | is.na(minsk_data_base[,"AverageTemperatureUncertainty"]),]
+minsk_data_missing = minsk_data_init[is.na(minsk_data_init[,"AverageTemperature"]) | is.na(minsk_data_init[,"AverageTemperatureUncertainty"]),]
 dim(minsk_data_missing)
 
 ## Luckily, however, only 73 entries contain missing temperature data. This should be
 ## a small enough proportion of the entries to continue our analysis without needing to
 ## deal with data cleaning.
 
-minsk_data = minsk_data_base[!(is.na(minsk_data_base[,"AverageTemperature"]) | is.na(minsk_data_base[,"AverageTemperatureUncertainty"])),]
+minsk_data = minsk_data_init[!(is.na(minsk_data_init[,"AverageTemperature"]) | is.na(minsk_data_init[,"AverageTemperatureUncertainty"])),]
 summary(minsk_data)
 
 ## We can create some plots to observe initial trends in the data
 
+dev.new()
 plot(minsk_data[, c("dt","AverageTemperature")],type="l",main="Average Temperature in Minsk")
 dev.new()
 plot(minsk_data[, c("dt","AverageTemperatureUncertainty")],type="l",main="Uncertainty of Average Temperature Reading in Minsk")
@@ -63,8 +64,15 @@ for (mon in seasonal_months){
 
 ## Plot seasonal data
 
+dev.new()
 seasonal_plot <- ggplot()
-for (mon in seasonal_months){
-    seasonal_plot <- seasonal_plot + geom_line(data = minsk_data_snl[[mon]], aes(x = dt, y = AverageTemperature))
+colours = c("#000080","#d40202","#d9d400", "#008000")
+for (i in 1:4){
+    seasonal_plot <- seasonal_plot + geom_line(data = minsk_data_snl[[i]], aes(x = dt, y = AverageTemperature), color = colours[i], alpha = 0.7)
 }
-seasonal_plot
+seasonal_plot + theme_minimal()
+
+## There are no visible trends in the data, as yearly variance causes the data to be
+## particularly sporadic. However, it is possible we can statistically test for a
+## significant increase over time, which would indicate provable truth to global warming.
+
