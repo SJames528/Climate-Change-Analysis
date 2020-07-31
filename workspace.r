@@ -72,7 +72,10 @@ for (i in 1:4){
 }
 seasonal_plot + theme_minimal()
 
-## There are no visible trends in the data, as yearly variance causes the data to be
-## particularly sporadic. However, it is possible we can statistically test for a
-## significant increase over time, which would indicate provable truth to global warming.
+## There are no visible trends in the data, as yearly variance causes interference.
+## However, it is possible we can statistically test for a significant increase over
+## time, which would indicate provable evidence of global warming.
 
+## I will first try a basic test, asking if the yearly difference sequence has a mean
+## greater than zero, which would prove increase over time. I will be using a significance
+## level of a=0.05
