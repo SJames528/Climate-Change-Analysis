@@ -1,12 +1,15 @@
 ---
-title: Flow
-output: github_document
+output: rmarkdown::github_document
 ---
+
+```{r, echo=False}
+knitr::opts_chunk$set(collapse=TRUE, comment="##")
+```
 
 
 ### Markdown Test
 
-# Introduction
+### Introduction
 
 This is a test on Emacs Markdown
 KekW
