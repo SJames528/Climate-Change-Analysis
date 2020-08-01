@@ -4,6 +4,7 @@ output: git_document
 
 
 
+
 ## Climate Change Analysis
 
 ### Set Preliminaries
@@ -140,7 +141,7 @@ for (mon in seasonal_months){
     minsk_data_snl[[mon]] <- minsk_data[format(minsk_data$dt, format="%b") == mon,]
 }
 ```
-Plot seasonal data
+Plot seasonal data, which will make the data easier to model and test:
 
 
 ```r

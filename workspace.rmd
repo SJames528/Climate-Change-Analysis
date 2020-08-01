@@ -2,6 +2,7 @@
 output: git_document
 ---
 
+
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(fig.path = "Figures/EDA/EDA-")
 ```
@@ -71,7 +72,7 @@ for (mon in seasonal_months){
     minsk_data_snl[[mon]] <- minsk_data[format(minsk_data$dt, format="%b") == mon,]
 }
 ```
-Plot seasonal data
+Plot seasonal data, which will make the data easier to model and test:
 
 ```{r}
 #dev.new()
