@@ -2,6 +2,8 @@
 output: git_document
 ---
 
+
+
 ## Climate Change Analysis
 
 ### Set Preliminaries
@@ -115,14 +117,14 @@ We can create some plots to observe initial trends in the data
 plot(minsk_data[, c("dt","AverageTemperature")],type="l",main="Average Temperature in Minsk")
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
+![plot of chunk unnamed-chunk-7](Figures/EDA/EDA-unnamed-chunk-7-1.png)
 
 ```r
 #dev.new()
 plot(minsk_data[, c("dt","AverageTemperatureUncertainty")],type="l",main="Uncertainty of Average Temperature Reading in Minsk")
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-2.png)
+![plot of chunk unnamed-chunk-7](Figures/EDA/EDA-unnamed-chunk-7-2.png)
 The average temperature reading data follows a regular variation, as would be
 expected throughtout the year. An appropriate next step may be to isolate readings
 for each month of the year or seasonally, in order to better see trends across time.
@@ -151,7 +153,7 @@ for (i in 1:4){
 seasonal_plot + theme_minimal()
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+![plot of chunk unnamed-chunk-9](Figures/EDA/EDA-unnamed-chunk-9-1.png)
 
 There are no visible trends in the data, as yearly variance causes interference.
 However, it is possible we can statistically test for a significant increase over

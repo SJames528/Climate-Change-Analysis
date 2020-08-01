@@ -2,6 +2,10 @@
 output: git_document
 ---
 
+```{r, echo = FALSE}
+knitr::opts_chunk$set(fig.path = "Figures/EDA/EDA-")
+```
+
 ## Climate Change Analysis
 
 ### Set Preliminaries
