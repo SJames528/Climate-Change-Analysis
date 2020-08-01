@@ -111,11 +111,18 @@ We can create some plots to observe initial trends in the data
 
 
 ```r
-dev.new()
+#dev.new()
 plot(minsk_data[, c("dt","AverageTemperature")],type="l",main="Average Temperature in Minsk")
-dev.new()
+```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
+
+```r
+#dev.new()
 plot(minsk_data[, c("dt","AverageTemperatureUncertainty")],type="l",main="Uncertainty of Average Temperature Reading in Minsk")
 ```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-2.png)
 The average temperature reading data follows a regular variation, as would be
 expected throughtout the year. An appropriate next step may be to isolate readings
 for each month of the year or seasonally, in order to better see trends across time.
@@ -135,7 +142,7 @@ Plot seasonal data
 
 
 ```r
-dev.new()
+#dev.new()
 seasonal_plot <- ggplot()
 colours = c("#000080","#d40202","#d9d400", "#008000")
 for (i in 1:4){
@@ -143,6 +150,8 @@ for (i in 1:4){
 }
 seasonal_plot + theme_minimal()
 ```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
 
 There are no visible trends in the data, as yearly variance causes interference.
 However, it is possible we can statistically test for a significant increase over
