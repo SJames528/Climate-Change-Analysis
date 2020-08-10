@@ -39,7 +39,14 @@ dim(minsk_data_missing)
 ## a small enough proportion of the entries to continue our analysis without needing to
 ## deal with data cleaning.
 
-minsk_data = minsk_data_init[!(is.na(minsk_data_init[,"AverageTemperature"]) | is.na(minsk_data_init[,"AverageTemperatureUncertainty"])),]
+print("Missing Dates:")
+minsk_data_missing$dt
+
+## We can see here that the missing data is complete from 1753 onwards, with the exception of
+## one month in 2013
+
+minsk_data = minsk_data_init[format(minsk_data_init$dt, format="%Y")>=1753,]
+minsk_data = minsk_data[!(is.na(minsk_data[,"AverageTemperature"]) | is.na(minsk_data[,"AverageTemperatureUncertainty"])),]
 summary(minsk_data)
 
 ## We can create some plots to observe initial trends in the data
@@ -76,6 +83,51 @@ seasonal_plot + theme_minimal()
 ## However, it is possible we can statistically test for a significant increase over
 ## time, which would indicate provable evidence of global warming.
 
+                                        # ---------------
+                                        # Statistical Testing
+                                        # ---------------
+
 ## I will first try a basic test, asking if the yearly difference sequence has a mean
 ## greater than zero, which would prove increase over time. I will be using a significance
-## level of a=0.05
+## level of a=0.05. I will try this using each month in turn, thus testing 12 times. I will
+## display my working for January, and extend this to the others.
+
+## I want to define an appropriate test for each monthly dataset. There are two
+## ways I could do this: 1) By converting the absolute temperature data into yearly differences,
+## and testing if overall these have a significantly positive mean; 2) By defining a suitable
+## year range (e.g. 1750-1900) as a "control" period, and testing if recent measurements
+## do not fit the control distribution.
+
+## The first option will be slightly easier to perform, so I will pursue that one initially.
+
+## First to convert the absolute data into differences:
+
+months <- c("Jan", "Feb", "Mar", "Apr")#, "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+minsk_data_monthly <- list()
+minsk_data_month_diff <- list()
+for (mon in months){
+    minsk_data_monthly[[mon]] <- minsk_data[format(minsk_data$dt, format="%b") == mon,]
+}
+
+
+## *!* NOW FIXED *!*
+
+for (mon in months){
+  minsk_data_month_diff[[mon]] <- data.frame(minsk_data_monthly[[mon]]$dt[-1])
+  names(minsk_data_month_diff[[mon]]) = c("Date")
+  minsk_data_month_diff[[mon]]["Difference"] <- minsk_data_monthly[[mon]]$AverageTemperature[-1] - minsk_data_monthly[[mon]]$AverageTemperature[-(dim(minsk_data_monthly[[mon]])[1])]
+  minsk_data_month_diff[[mon]]["DifferenceUncertainty"] <- minsk_data_monthly[[mon]]$AverageTemperatureUncertainty[-1] + minsk_data_monthly[[mon]]$AverageTemperatureUncertainty[-(dim(minsk_data_monthly[[mon]])[1])]
+}
+
+## January differences plot
+
+dev.new()
+ggplot() + geom_line(data = minsk_data_month_diff[["Jan"]], aes(x = Date, y = Difference), alpha = 0.7) + ggtitle("Year-to-Year changes \n in January temperature in Minsk") + xlab("Year") + ylab("Temperature Difference (Celcius)")
+dev.new()
+ggplot() + geom_line(data = minsk_data_month_diff[["Jan"]], aes(x = Date, y = DifferenceUncertainty), alpha = 0.7)
+
+## We need to bear uncertainty in mind, since the error in this data can be quite significant. By taking a difference between two measurements, we add together the uncertainty from both. I've plotted a section of the graph with uncertainty included:
+
+minsk_jan_reduced=minsk_data_month_diff[["Jan"]][c(1:50),]
+dev.new()
+ggplot(minsk_jan_reduced) + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty))
