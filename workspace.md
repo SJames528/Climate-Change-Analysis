@@ -85,22 +85,47 @@ a small enough proportion of the entries to continue our analysis without needin
 deal with data cleaning.
 
 
+```
+## [1] "Missing Dates:"
+```
+
+```
+##  [1] "1743-12-01" "1744-01-01" "1744-02-01" "1744-03-01" "1744-08-01"
+##  [6] "1745-05-01" "1745-06-01" "1745-07-01" "1745-08-01" "1745-09-01"
+## [11] "1745-10-01" "1745-11-01" "1745-12-01" "1746-01-01" "1746-02-01"
+## [16] "1746-03-01" "1746-04-01" "1746-05-01" "1746-06-01" "1746-07-01"
+## [21] "1746-08-01" "1746-09-01" "1746-10-01" "1746-11-01" "1746-12-01"
+## [26] "1747-01-01" "1747-02-01" "1747-03-01" "1747-04-01" "1747-05-01"
+## [31] "1747-06-01" "1747-07-01" "1747-08-01" "1747-09-01" "1747-10-01"
+## [36] "1747-11-01" "1747-12-01" "1748-01-01" "1748-02-01" "1748-03-01"
+## [41] "1748-04-01" "1748-05-01" "1748-06-01" "1748-07-01" "1748-08-01"
+## [46] "1748-09-01" "1748-10-01" "1748-11-01" "1748-12-01" "1749-01-01"
+## [51] "1749-02-01" "1749-03-01" "1749-04-01" "1749-05-01" "1749-06-01"
+## [56] "1749-07-01" "1749-08-01" "1749-09-01" "1749-10-01" "1749-11-01"
+## [61] "1749-12-01" "1750-11-01" "1751-05-01" "1751-10-01" "1751-11-01"
+## [66] "1751-12-01" "1752-02-01" "1752-05-01" "1752-06-01" "1752-07-01"
+## [71] "1752-08-01" "1752-09-01" "2013-09-01"
+```
+We can see here that the data is complete from around 1753 onwards, with the exception of one month in 2013. The easiest way around this is to remove all entries from before 1753, and ignore the single instance in 2013.
+
+
 ```r
-minsk_data = minsk_data_init[!(is.na(minsk_data_init[,"AverageTemperature"]) | is.na(minsk_data_init[,"AverageTemperatureUncertainty"])),]
+minsk_data = minsk_data_init[format(minsk_data_init$dt, format="%Y")>=1753,]
+minsk_data = minsk_data[!(is.na(minsk_data[,"AverageTemperature"]) | is.na(minsk_data[,"AverageTemperatureUncertainty"])),]
 summary(minsk_data)
 ```
 
 ```
 ##        dt             AverageTemperature AverageTemperatureUncertainty
-##  Min.   :1743-11-01   Min.   :-17.013    Min.   : 0.084               
-##  1st Qu.:1815-10-08   1st Qu.: -2.728    1st Qu.: 0.334               
-##  Median :1881-09-16   Median :  5.465    Median : 0.747               
-##  Mean   :1881-09-04   Mean   :  5.404    Mean   : 1.509               
-##  3rd Qu.:1947-08-24   3rd Qu.: 14.363    3rd Qu.: 2.235               
+##  Min.   :1753-01-01   Min.   :-17.013    Min.   : 0.084               
+##  1st Qu.:1818-02-22   1st Qu.: -2.722    1st Qu.: 0.332               
+##  Median :1883-04-16   Median :  5.485    Median : 0.730               
+##  Mean   :1883-04-16   Mean   :  5.417    Mean   : 1.505               
+##  3rd Qu.:1948-06-08   3rd Qu.: 14.368    3rd Qu.: 2.242               
 ##  Max.   :2013-08-01   Max.   : 22.767    Max.   :11.078               
 ##                                                                       
 ##        City             Country        Latitude      Longitude   
-##  Minsk   :3166   Belarus    :3166   53.84N :3166   28.64E :3166  
+##  Minsk   :3128   Belarus    :3128   53.84N :3128   28.64E :3128  
 ##  A Coruña:   0   Afghanistan:   0   0.80N  :   0   0.00W  :   0  
 ##  Aachen  :   0   Albania    :   0   0.80S  :   0   0.81E  :   0  
 ##  Aalborg :   0   Algeria    :   0   10.45N :   0   0.81W  :   0  
@@ -114,18 +139,16 @@ We can create some plots to observe initial trends in the data
 
 
 ```r
-#dev.new()
 plot(minsk_data[, c("dt","AverageTemperature")],type="l",main="Average Temperature in Minsk")
 ```
 
-![plot of chunk unnamed-chunk-7](Figures/EDA/EDA-unnamed-chunk-7-1.png)
+![plot of chunk unnamed-chunk-8](Figures/EDA/EDA-unnamed-chunk-8-1.png)
 
 ```r
-#dev.new()
 plot(minsk_data[, c("dt","AverageTemperatureUncertainty")],type="l",main="Uncertainty of Average Temperature Reading in Minsk")
 ```
 
-![plot of chunk unnamed-chunk-7](Figures/EDA/EDA-unnamed-chunk-7-2.png)
+![plot of chunk unnamed-chunk-8](Figures/EDA/EDA-unnamed-chunk-8-2.png)
 The average temperature reading data follows a regular variation, as would be
 expected throughtout the year. An appropriate next step may be to isolate readings
 for each month of the year or seasonally, in order to better see trends across time.
@@ -145,7 +168,6 @@ Plot seasonal data, which will make the data easier to model and test:
 
 
 ```r
-#dev.new()
 seasonal_plot <- ggplot()
 colours = c("#000080","#d40202","#d9d400", "#008000")
 for (i in 1:4){
@@ -154,12 +176,144 @@ for (i in 1:4){
 seasonal_plot + theme_minimal()
 ```
 
-![plot of chunk unnamed-chunk-9](Figures/EDA/EDA-unnamed-chunk-9-1.png)
+![plot of chunk unnamed-chunk-10](Figures/EDA/EDA-unnamed-chunk-10-1.png)
 
-There are no visible trends in the data, as yearly variance causes interference.
+<p>There are no visible trends in the data, as yearly variance causes interference.
 However, it is possible we can statistically test for a significant increase over
-time, which would indicate provable evidence of global warming.
+time, which would indicate provable evidence of global warming.</p>
 
-I will first try a basic test, asking if the yearly difference sequence has a mean
-greater than zero, which would prove increase over time. I will be using a significance
-level of a=0.05
+
+### Statistical Testing
+
+<p>I will first try a basic test, asking if the yearly difference sequence has a mean greater than zero, which would certainly imply increase in temperature over time. I will be using a significance level of \alpha = 0.05. I will perform this test on each month in turn, thus obtaining 12 complete tests for each location.</p>
+
+<p>Some alternative methods include the following:
+* Define a suitable year range (e.g. 1750-1900) as a "control" period, and testing if recent measurements fit within the control temperature distribution.
+* Take only the yearly highest temperatures, and perform the difference sequence test.
+
+#### Difference Sequence Generation
+
+First, obtain seperate data for each month and then convert the absolute data into yearly differences:
+
+
+```r
+months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+minsk_data_monthly <- list()
+minsk_data_month_diff <- list()
+for (mon in months){
+  minsk_data_monthly[[mon]] <- minsk_data[format(minsk_data$dt, format="%b") == mon,]
+}
+head(minsk_data_monthly[["Jan"]])
+```
+
+```
+##                 dt AverageTemperature AverageTemperatureUncertainty  City
+## 4839713 1753-01-01             -7.544                         6.618 Minsk
+## 4839725 1754-01-01             -7.887                         2.208 Minsk
+## 4839737 1755-01-01             -9.892                         4.115 Minsk
+## 4839749 1756-01-01             -4.501                         5.847 Minsk
+## 4839761 1757-01-01             -9.528                         3.033 Minsk
+## 4839773 1758-01-01            -12.011                         2.284 Minsk
+##         Country Latitude Longitude
+## 4839713 Belarus   53.84N    28.64E
+## 4839725 Belarus   53.84N    28.64E
+## 4839737 Belarus   53.84N    28.64E
+## 4839749 Belarus   53.84N    28.64E
+## 4839761 Belarus   53.84N    28.64E
+## 4839773 Belarus   53.84N    28.64E
+```
+
+
+```r
+for (mon in months){
+  minsk_data_month_diff[[mon]] <- data.frame(minsk_data_monthly[[mon]]$dt[-1])
+  names(minsk_data_month_diff[[mon]]) = c("Date")
+  minsk_data_month_diff[[mon]]["Difference"] <- minsk_data_monthly[[mon]]$AverageTemperature[-1] - minsk_data_monthly[[mon]]$AverageTemperature[-(dim(minsk_data_monthly[[mon]])[1])]
+  minsk_data_month_diff[[mon]]["DifferenceUncertainty"] <- minsk_data_monthly[[mon]]$AverageTemperatureUncertainty[-1] + minsk_data_monthly[[mon]]$AverageTemperatureUncertainty[-(dim(minsk_data_monthly[[mon]])[1])]
+}
+head(minsk_data_month_diff[["Jan"]])
+```
+
+```
+##         Date Difference DifferenceUncertainty
+## 1 1754-01-01     -0.343                 8.826
+## 2 1755-01-01     -2.005                 6.323
+## 3 1756-01-01      5.391                 9.962
+## 4 1757-01-01     -5.027                 8.880
+## 5 1758-01-01     -2.483                 5.317
+## 6 1759-01-01      7.946                 8.934
+```
+We can visualise this transformation of the data:
+
+
+```r
+ggplot() + geom_point(data = minsk_data_month_diff[["Jan"]], aes(x = Date, y = Difference), alpha = 0.7) + ggtitle("Year-to-Year changes in January temperature in Minsk") + xlab("Year") + ylab("Temperature Difference (Celcius)")
+```
+
+![plot of chunk unnamed-chunk-13](Figures/EDA/EDA-unnamed-chunk-13-1.png)
+
+```r
+ggplot() + geom_line(data = minsk_data_month_diff[["Jan"]], aes(x = Date, y = DifferenceUncertainty), alpha = 0.7)
+```
+
+![plot of chunk unnamed-chunk-13](Figures/EDA/EDA-unnamed-chunk-13-2.png)
+
+We need to bear uncertainty in mind, since the error in this data is quite significant. By taking the difference between two seperate measurements, we combine the error, which means the difference scores for earlier years are particularly uncertain, and this may cast doubt on any conclusions we make. Here we can see a portion of the difference sequence with uncertainty included:
+
+
+```r
+minsk_jan_reduced=minsk_data_month_diff[["Jan"]][c(50:100),]
+ggplot(minsk_jan_reduced) + geom_point(aes(x = Date, y = Difference))  + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty))
+```
+
+![plot of chunk unnamed-chunk-14](Figures/EDA/EDA-unnamed-chunk-14-1.png)
+
+#### Hypothesis Testing
+
+Now that we have our transformed difference sequence (X_1_,X_2_,...,X_N_), I will divide by the empirical standard deviation and test the following hypothesis.
+
+* H_0_: X_1_,...,X_N_ ~ i.i.d normal(0,1)
+* H_1_: X_1_,...,X_N_ ~ i.i.d normal(\mu,1)   where \mu > 0
+
+We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. I will gather a p-value for each month of the year, to gain 12 scores in total.
+
+
+```r
+for (mon in months){
+    minsk_data_month_diff[[mon]]["StandardisedDifference"] = minsk_data_month_diff[[mon]]$Difference / sd(minsk_data_month_diff[[mon]]$Difference)
+}
+head(minsk_data_month_diff[["Jan"]])
+```
+
+```
+##         Date Difference DifferenceUncertainty StandardisedDifference
+## 1 1754-01-01     -0.343                 8.826            -0.07011411
+## 2 1755-01-01     -2.005                 6.323            -0.40985068
+## 3 1756-01-01      5.391                 9.962             1.10199752
+## 4 1757-01-01     -5.027                 8.880            -1.02759072
+## 5 1758-01-01     -2.483                 5.317            -0.50756072
+## 6 1759-01-01      7.946                 8.934             1.62427607
+```
+With our standardised sequence, we can now proceed:
+
+```r
+p_values <- data.frame(Location=character(), JanPVal=integer(), FebPVal=integer(), MarPVal=integer(), AprPVal=integer(), MayPVal=integer(), JunPVal=integer(), JulPVal=integer(), AugPVal=integer(), SepPVal=integer(), OctPVal=integer(), NovPVal=integer(), DecPVal=integer(), stringsAsFactors = FALSE)
+pval_calculator_minsk <- function(mon){
+    diff_mean=mean(minsk_data_month_diff[[mon]]$StandardisedDifference)
+    diff_data_length=dim(minsk_data_month_diff[[mon]])[1]
+    return(1-pnorm(sqrt(diff_data_length)*diff_mean,0,1))
+}
+p_values[1,]=append(c("Minsk"),sapply(months,pval_calculator_minsk))
+p_values
+```
+
+```
+##   Location           JanPVal           FebPVal           MarPVal
+## 1    Minsk 0.502407348664026 0.471094056580607 0.540317793905682
+##             AprPVal           MayPVal           JunPVal           JulPVal
+## 1 0.497918479594841 0.462519729600017 0.469820529738844 0.491110784084609
+##             AugPVal           SepPVal          OctPVal           NovPVal
+## 1 0.477493564579728 0.484464615006393 0.49605084205147 0.467720525267789
+##             DecPVal
+## 1 0.480465612671691
+```

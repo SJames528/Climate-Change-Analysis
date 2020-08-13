@@ -95,14 +95,15 @@ time, which would indicate provable evidence of global warming.</p>
 
 ### Statistical Testing
 
+<p>I will first try a basic test, asking if the yearly difference sequence has a mean greater than zero, which would certainly imply increase in temperature over time. I will be using a significance level of \alpha = 0.05. I will perform this test on each month in turn, thus obtaining 12 complete tests for each location.</p>
 
-<p>I want to define an appropriate test for each monthly dataset. There are two ways I could do this: 1) By converting the absolute temperature data into yearly differences, and testing if overall these have a significantly positive mean; 2) By defining a suitable year range (e.g. 1750-1900) as a "control" period, and testing if recent measurements do not fit the control distribution. The first option will be slightly easier to perform, so I will pursue that one initially.</p>
+<p>Some alternative methods include the following:
+* Define a suitable year range (e.g. 1750-1900) as a "control" period, and testing if recent measurements fit within the control temperature distribution.
+* Take only the yearly highest temperatures, and perform the difference sequence test.
 
-<p>I will first try a basic test, asking if the yearly difference sequence has a mean
-greater than zero, which would prove increase over time. I will be using a significance
-level of a=0.05. I will try this using each month in turn, thus testing 12 times. I will display my working for January, and extend this to the others.</p>
+#### Difference Sequence Generation
 
-First, obtain montly data and then convert the absolute data into yearly differences:
+First, obtain seperate data for each month and then convert the absolute data into yearly differences:
 
 ```{r}
 months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
@@ -111,14 +112,55 @@ minsk_data_month_diff <- list()
 for (mon in months){
   minsk_data_monthly[[mon]] <- minsk_data[format(minsk_data$dt, format="%b") == mon,]
 }
+head(minsk_data_monthly[["Jan"]])
 ```
 
 ```{r}
 for (mon in months){
-  minsk_data_monthly_diff[[mon]] <- data.frame(minsk_data_monthly[[mon]]$dt[-1])
-  names(minsk_data_monthly_diff[[mon]]) = c("Date")
-  
-  minsk_data_monthly_diff[[mon]]["Difference"] <- minsk_data_monthly[[mon]]$AverageTemperature[-1] - minsk_data_monthly[[mon]]$AverageTemperature[-(dim(minsk_data_monthly[[mon]])[1])]
-  
-  minsk_data_monthly_diff[[mon]]["DifferenceUncertainty"] <- minsk_data_monthly[[mon]]$AverageTemperatureUncertainty[-1] + minsk_data_monthly[[mon]]$AverageTemperatureUncertainty[-(dim(minsk_data_monthly[[mon]])[1])]
+  minsk_data_month_diff[[mon]] <- data.frame(minsk_data_monthly[[mon]]$dt[-1])
+  names(minsk_data_month_diff[[mon]]) = c("Date")
+  minsk_data_month_diff[[mon]]["Difference"] <- minsk_data_monthly[[mon]]$AverageTemperature[-1] - minsk_data_monthly[[mon]]$AverageTemperature[-(dim(minsk_data_monthly[[mon]])[1])]
+  minsk_data_month_diff[[mon]]["DifferenceUncertainty"] <- minsk_data_monthly[[mon]]$AverageTemperatureUncertainty[-1] + minsk_data_monthly[[mon]]$AverageTemperatureUncertainty[-(dim(minsk_data_monthly[[mon]])[1])]
+}
+head(minsk_data_month_diff[["Jan"]])
+```
+We can visualise this transformation of the data:
+
+```{r}
+ggplot() + geom_point(data = minsk_data_month_diff[["Jan"]], aes(x = Date, y = Difference), alpha = 0.7) + ggtitle("Year-to-Year changes in January temperature in Minsk") + xlab("Year") + ylab("Temperature Difference (Celcius)")
+ggplot() + geom_line(data = minsk_data_month_diff[["Jan"]], aes(x = Date, y = DifferenceUncertainty), alpha = 0.7)
+```
+
+We need to bear uncertainty in mind, since the error in this data is quite significant. By taking the difference between two seperate measurements, we combine the error, which means the difference scores for earlier years are particularly uncertain, and this may cast doubt on any conclusions we make. Here we can see a portion of the difference sequence with uncertainty included:
+
+```{r}
+minsk_jan_reduced=minsk_data_month_diff[["Jan"]][c(50:100),]
+ggplot(minsk_jan_reduced) + geom_point(aes(x = Date, y = Difference))  + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty))
+```
+
+#### Hypothesis Testing
+
+Now that we have our transformed difference sequence (X_1_,X_2_,...,X_N_), I will divide by the empirical standard deviation and test the following hypothesis.
+
+* H_0_: X_1_,...,X_N_ ~ i.i.d normal(0,1)
+* H_1_: X_1_,...,X_N_ ~ i.i.d normal(\mu,1)   where \mu > 0
+
+We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. I will gather a p-value for each month of the year, to gain 12 scores in total.
+
+```{r}
+for (mon in months){
+    minsk_data_month_diff[[mon]]["StandardisedDifference"] = minsk_data_month_diff[[mon]]$Difference / sd(minsk_data_month_diff[[mon]]$Difference)
+}
+head(minsk_data_month_diff[["Jan"]])
+```
+With our standardised sequence, we can now proceed:
+```{r}
+p_values <- data.frame(Location=character(), JanPVal=integer(), FebPVal=integer(), MarPVal=integer(), AprPVal=integer(), MayPVal=integer(), JunPVal=integer(), JulPVal=integer(), AugPVal=integer(), SepPVal=integer(), OctPVal=integer(), NovPVal=integer(), DecPVal=integer(), stringsAsFactors = FALSE)
+pval_calculator_minsk <- function(mon){
+    diff_mean=mean(minsk_data_month_diff[[mon]]$StandardisedDifference)
+    diff_data_length=dim(minsk_data_month_diff[[mon]])[1]
+    return(1-pnorm(sqrt(diff_data_length)*diff_mean,0,1))
+}
+p_values[1,]=append(c("Minsk"),sapply(months,pval_calculator_minsk))
+p_values
 ```

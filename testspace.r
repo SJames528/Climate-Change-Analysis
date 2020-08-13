@@ -146,9 +146,15 @@ ggplot(minsk_jan_reduced) + geom_point(aes(x = Date, y = Difference))  + geom_er
 for (mon in months){
     minsk_data_month_diff[[mon]]["StandardisedDifference"] = minsk_data_month_diff[[mon]]$Difference / sd(minsk_data_month_diff[[mon]]$Difference)
 }
+head(minsk_data_month_diff[["Jan"]])
 
 ## We want our test statistic here to be the most powerful, which by the Neyman-Pearson Lemma is simply the mean of the difference sequence. To see a proof of this, please see Section A in the appendix. I will gather a p-value for each month of the year, to gain 12 scores in total.
 
-for (mon in months){
-    min
+p_values <- data.frame(Location=character(), JanPVal=integer(), FebPVal=integer(), MarPVal=integer(), AprPVal=integer(), MayPVal=integer(), JunPVal=integer(), JulPVal=integer(), AugPVal=integer(), SepPVal=integer(), OctPVal=integer(), NovPVal=integer(), DecPVal=integer(), stringsAsFactors = FALSE)
+pval_calculator_minsk <- function(mon){
+    diff_mean=mean(minsk_data_month_diff[[mon]]$StandardisedDifference)
+    diff_data_length=dim(minsk_data_month_diff[[mon]])[1]
+    return(1-pnorm(sqrt(diff_data_length)*diff_mean,0,1))
 }
+p_values[1,]=append(c("Minsk"),sapply(months,pval_calculator_minsk))
+p_values
