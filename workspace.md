@@ -1,7 +1,3 @@
----
-output: git_document
----
-
 
 
 
@@ -16,6 +12,8 @@ data_loc="~/Projects/Data/Climate-Change-Analysis"
 ```
 
 ### Load in Data
+
+(For data source, please see repository README) 
 
 
 ```r
@@ -68,7 +66,7 @@ head(minsk_data_init)
 ## 4839608 Belarus   53.84N    28.64E
 ```
 
-There are already visible entries with missing data
+There are already visible data points with missing entries. If too much data is missing, this will affect the viability of the conclusions I can draw from the data, and will require steps to interpolate or remove missing data points. I therefore will check to see how many months in the sample contain a missing data point.
 
 
 ```r
@@ -80,9 +78,9 @@ dim(minsk_data_missing)
 ## [1] 73  7
 ```
 
-Luckily, however, only 73 entries contain missing temperature data. This should be
+Luckily, however, only 73 months in the record contain missing temperature data. This should be
 a small enough proportion of the entries to continue our analysis without needing to
-deal with data cleaning.
+deal with data cleaning. It will also help to see how these missing months are distributed in the overall data:
 
 
 ```
@@ -133,8 +131,8 @@ summary(minsk_data)
 ##  Abadan  :   0   Argentina  :   0   12.05N :   0   1.18E  :   0  
 ##  (Other) :   0   (Other)    :   0   (Other):   0   (Other):   0
 ```
-
-
+<br />
+<br />
 We can create some plots to observe initial trends in the data
 
 
@@ -149,6 +147,7 @@ plot(minsk_data[, c("dt","AverageTemperatureUncertainty")],type="l",main="Uncert
 ```
 
 ![plot of chunk unnamed-chunk-8](Figures/EDA/EDA-unnamed-chunk-8-2.png)
+<br />
 The average temperature reading data follows a regular variation, as would be
 expected throughtout the year. An appropriate next step may be to isolate readings
 for each month of the year or seasonally, in order to better see trends across time.
@@ -275,7 +274,9 @@ Now that we have our transformed difference sequence (X_1_,X_2_,...,X_N_), I wil
 * H_0_: X_1_,...,X_N_ ~ i.i.d normal(0,1)
 * H_1_: X_1_,...,X_N_ ~ i.i.d normal(\mu,1)   where \mu > 0
 
-We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. I will gather a p-value for each month of the year, to gain 12 scores in total.
+We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. With my data split into months, I can gather 12 p-values per year of data.
+
+Firstly to standardise the sequence:
 
 
 ```r
@@ -294,7 +295,7 @@ head(minsk_data_month_diff[["Jan"]])
 ## 5 1758-01-01     -2.483                 5.317            -0.50756072
 ## 6 1759-01-01      7.946                 8.934             1.62427607
 ```
-With our standardised sequence, we can now proceed:
+And to obtain p-values:
 
 ```r
 p_values <- data.frame(Location=character(), JanPVal=integer(), FebPVal=integer(), MarPVal=integer(), AprPVal=integer(), MayPVal=integer(), JunPVal=integer(), JulPVal=integer(), AugPVal=integer(), SepPVal=integer(), OctPVal=integer(), NovPVal=integer(), DecPVal=integer(), stringsAsFactors = FALSE)

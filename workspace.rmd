@@ -1,7 +1,3 @@
----
-output: git_document
----
-
 
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(fig.path = "Figures/EDA/EDA-")
@@ -18,6 +14,8 @@ data_loc="~/Projects/Data/Climate-Change-Analysis"
 
 ### Load in Data
 
+(For data source, please see repository README) 
+
 ```{r}
 city_data <- read.csv(paste(data_loc, "/GlobalLandTemperaturesByCity.csv", sep = ""))
 city_data$dt <- as.Date(city_data$dt, "%Y-%m-%d")
@@ -33,18 +31,19 @@ minsk_data_init <- city_data[city_data[,"City"]=="Minsk",]
 head(minsk_data_init)
 ```
 
-There are already visible entries with missing data
+There are already visible data points with missing entries. If too much data is missing, this will affect the viability of the conclusions I can draw from the data, and will require steps to interpolate or remove missing data points. I therefore will check to see how many months in the sample contain a missing data point.
 
 ```{r}
 minsk_data_missing = minsk_data_init[is.na(minsk_data_init[,"AverageTemperature"]) | is.na(minsk_data_init[,"AverageTemperatureUncertainty"]),]
 dim(minsk_data_missing)
 ```
 
-Luckily, however, only 73 entries contain missing temperature data. This should be
+Luckily, however, only 73 months in the record contain missing temperature data. This should be
 a small enough proportion of the entries to continue our analysis without needing to
-deal with data cleaning.
+deal with data cleaning. It will also help to see how these missing months are distributed in the overall data:
 
 ```{r, echo=FALSE}
+
 print("Missing Dates:")
 minsk_data_missing$dt
 ```
@@ -55,14 +54,15 @@ minsk_data = minsk_data_init[format(minsk_data_init$dt, format="%Y")>=1753,]
 minsk_data = minsk_data[!(is.na(minsk_data[,"AverageTemperature"]) | is.na(minsk_data[,"AverageTemperatureUncertainty"])),]
 summary(minsk_data)
 ```
-
-
+<br />
+<br />
 We can create some plots to observe initial trends in the data
 
 ```{r}
 plot(minsk_data[, c("dt","AverageTemperature")],type="l",main="Average Temperature in Minsk")
 plot(minsk_data[, c("dt","AverageTemperatureUncertainty")],type="l",main="Uncertainty of Average Temperature Reading in Minsk")
 ```
+<br />
 The average temperature reading data follows a regular variation, as would be
 expected throughtout the year. An appropriate next step may be to isolate readings
 for each month of the year or seasonally, in order to better see trends across time.
@@ -145,7 +145,9 @@ Now that we have our transformed difference sequence (X_1_,X_2_,...,X_N_), I wil
 * H_0_: X_1_,...,X_N_ ~ i.i.d normal(0,1)
 * H_1_: X_1_,...,X_N_ ~ i.i.d normal(\mu,1)   where \mu > 0
 
-We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. I will gather a p-value for each month of the year, to gain 12 scores in total.
+We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. With my data split into months, I can gather 12 p-values per year of data.
+
+Firstly to standardise the sequence:
 
 ```{r}
 for (mon in months){
@@ -153,7 +155,7 @@ for (mon in months){
 }
 head(minsk_data_month_diff[["Jan"]])
 ```
-With our standardised sequence, we can now proceed:
+And to obtain p-values:
 ```{r}
 p_values <- data.frame(Location=character(), JanPVal=integer(), FebPVal=integer(), MarPVal=integer(), AprPVal=integer(), MayPVal=integer(), JunPVal=integer(), JulPVal=integer(), AugPVal=integer(), SepPVal=integer(), OctPVal=integer(), NovPVal=integer(), DecPVal=integer(), stringsAsFactors = FALSE)
 pval_calculator_minsk <- function(mon){
