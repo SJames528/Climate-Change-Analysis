@@ -1,5 +1,6 @@
 
 ```{r, echo = FALSE}
+library(knitr)
 knitr::opts_chunk$set(fig.path = "Figures/EDA/EDA-")
 ```
 
@@ -143,7 +144,7 @@ ggplot(minsk_jan_reduced) + geom_point(aes(x = Date, y = Difference))  + geom_er
 Now that we have our transformed difference sequence (X_1_,X_2_,...,X_N_), I will divide by the empirical standard deviation and test the following hypothesis.
 
 * H_0_: X_1_,...,X_N_ ~ i.i.d normal(0,1)
-* H_1_: X_1_,...,X_N_ ~ i.i.d normal(\mu,1)   where \mu > 0
+* H_1_: X_1_,...,X_N_ ~ i.i.d normal(`\mu`,1)   where `\mu > 0`
 
 We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. With my data split into months, I can gather 12 p-values per year of data.
 
