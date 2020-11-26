@@ -275,10 +275,10 @@ ggplot(minsk_data_month_diff[["Jan"]][c(200:250),]) + geom_point(aes(x = Date, y
 
 ### Hypothesis Testing
 
-Now that we have our transformed difference sequence (X_1_,X_2_,...,X_N_), I will divide by the empirical standard deviation and test the following hypothesis.
+Now that we have our transformed difference sequence (X<sub>1</sub>,X<sub>2</sub>,...,X<sub>N</sub>), I will divide by the empirical standard deviation and test the following hypothesis.
 
-* $H_0_: X_1_,...,X_N_$ ~ i.i.d normal(0,1)
-* $H_1_: X_1_,...,X_N_$ ~ i.i.d normal($\mu$,1)   where $\mu > 0$
+* H<sub>0</sub>: X<sub>1</sub>,...,X<sub>N</sub>$ ~ i.i.d normal(0,1)
+* H<sub>1</sub>: X<sub>1</sub>,...,X<sub>N</sub>$ ~ i.i.d normal(&mu;,1)   where &mu; > 0
 
 We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. With my data split into months, I can gather 12 p-values per year of data.
 
