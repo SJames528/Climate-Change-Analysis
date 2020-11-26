@@ -1,9 +1,9 @@
 
 
 
-## Climate Change Analysis
+# Climate Change Analysis
 
-### Set Preliminaries
+## Set Preliminaries
 
 
 ```r
@@ -39,7 +39,7 @@ head(city_data)
 ## 6   57.05N    10.33E
 ```
 
-### EDA
+## EDA
 
 There are records for several thousand cities here, each with regular monthly average temperature and uncertainty readings. It will be easier to focus on one city to begin with.
 
@@ -182,15 +182,16 @@ However, it is possible we can statistically test for a significant increase ove
 time, which would indicate provable evidence of global warming.</p>
 
 
-### Statistical Testing
+## Statistical Testing
 
 <p>I will first try a basic test, asking if the yearly difference sequence has a mean greater than zero, which would certainly imply increase in temperature over time. I will be using a significance level of \alpha = 0.05. I will perform this test on each month in turn, thus obtaining 12 complete tests for each location.</p>
 
-<p>Some alternative methods include the following:
+<p>Some alternative methods include the following:</p>
+
 * Define a suitable year range (e.g. 1750-1900) as a "control" period, and testing if recent measurements fit within the control temperature distribution.
 * Take only the yearly highest temperatures, and perform the difference sequence test.
 
-#### Difference Sequence Generation
+### Difference Sequence Generation
 
 First, obtain seperate data for each month and then convert the absolute data into yearly differences:
 
@@ -252,27 +253,32 @@ ggplot() + geom_point(data = minsk_data_month_diff[["Jan"]], aes(x = Date, y = D
 ![plot of chunk unnamed-chunk-13](Figures/EDA/EDA-unnamed-chunk-13-1.png)
 
 ```r
-ggplot() + geom_line(data = minsk_data_month_diff[["Jan"]], aes(x = Date, y = DifferenceUncertainty), alpha = 0.7)
+ggplot() + geom_line(data = minsk_data_month_diff[["Jan"]], aes(x = Date, y = DifferenceUncertainty), alpha = 0.7) + ggtitle("Uncertatinty in January temperature measurements in Minsk") + xlab("Year") + ylab("Temperature measurement uncertainty (Celcius)")
 ```
 
 ![plot of chunk unnamed-chunk-13](Figures/EDA/EDA-unnamed-chunk-13-2.png)
 
-We need to bear uncertainty in mind, since the error in this data is quite significant. By taking the difference between two seperate measurements, we combine the error, which means the difference scores for earlier years are particularly uncertain, and this may cast doubt on any conclusions we make. Here we can see a portion of the difference sequence with uncertainty included:
+We need to bear uncertainty in mind, since the error in this data is quite significant. By taking the difference between two seperate measurements, we combine the error, which means the difference scores for earlier years will be particularly large, and this may cast doubt on any conclusions we are able to make. This is illustrated here by two sections of the January temperature difference series with uncertainty displayed, taken from early and late periods of recording respectively:
 
 
 ```r
-minsk_jan_reduced=minsk_data_month_diff[["Jan"]][c(50:100),]
-ggplot(minsk_jan_reduced) + geom_point(aes(x = Date, y = Difference))  + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty))
+ggplot(minsk_data_month_diff[["Jan"]][c(50:100),]) + geom_point(aes(x = Date, y = Difference))  + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty)) +ggtitle("Difference sequence for January in Minsk with error, 1803-1853") + xlab("Year") + ylab("Temperature Difference (Celcius)") + ylim(-15,15)
 ```
 
 ![plot of chunk unnamed-chunk-14](Figures/EDA/EDA-unnamed-chunk-14-1.png)
 
-#### Hypothesis Testing
+```r
+ggplot(minsk_data_month_diff[["Jan"]][c(200:250),]) + geom_point(aes(x = Date, y = Difference))  + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty)) +ggtitle("Difference sequence for January in Minsk with error, 1953-2003") + xlab("Year") + ylab("Temperature Difference (Celcius)") + ylim(-15,15)
+```
+
+![plot of chunk unnamed-chunk-14](Figures/EDA/EDA-unnamed-chunk-14-2.png)
+
+### Hypothesis Testing
 
 Now that we have our transformed difference sequence (X_1_,X_2_,...,X_N_), I will divide by the empirical standard deviation and test the following hypothesis.
 
-* H_0_: X_1_,...,X_N_ ~ i.i.d normal(0,1)
-* H_1_: X_1_,...,X_N_ ~ i.i.d normal(`\mu`,1)   where `\mu > 0`
+* $H_0_: X_1_,...,X_N_$ ~ i.i.d normal(0,1)
+* $H_1_: X_1_,...,X_N_$ ~ i.i.d normal($\mu$,1)   where $\mu > 0$
 
 We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. With my data split into months, I can gather 12 p-values per year of data.
 
