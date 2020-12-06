@@ -184,16 +184,16 @@ time, which would indicate provable evidence of global warming.</p>
 
 ## Statistical Testing
 
-<p>I will first try a basic test, asking if the yearly difference sequence has a mean greater than zero, which would certainly imply increase in temperature over time. I will be using a significance level of \alpha = 0.05. I will perform this test on each month in turn, thus obtaining 12 complete tests for each location.</p>
+<p>My first test will be the most basic, asking if the yearly difference sequence has a mean greater than zero (which would certainly imply increase in temperature over time). I will perform this test on each month in turn, thus obtaining 12 complete tests for each location. This will also mean I need to be careful in my choice of significance level (&alpha;) if I want to contain the Family Wise Error Rate at 5% (more on this later).</p>
 
-<p>Some alternative methods include the following:</p>
+<p>My initial ideas for alternative testing methods include the following:</p>
 
 * Define a suitable year range (e.g. 1750-1900) as a "control" period, and testing if recent measurements fit within the control temperature distribution.
-* Take only the yearly highest temperatures, and perform the difference sequence test.
+* Take only the yearly highest temperatures, and perform the difference sequence test as before.
 
 ### Difference Sequence Generation
 
-First, obtain seperate data for each month and then convert the absolute data into yearly differences:
+For our first test, we want to split our data by month, and then convert the absolute temperature data into yearly differences:
 
 
 ```r
@@ -262,25 +262,31 @@ We need to bear uncertainty in mind, since the error in this data is quite signi
 
 
 ```r
-ggplot(minsk_data_month_diff[["Jan"]][c(50:100),]) + geom_point(aes(x = Date, y = Difference))  + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty)) +ggtitle("Difference sequence for January in Minsk with error, 1803-1853") + xlab("Year") + ylab("Temperature Difference (Celcius)") + ylim(-15,15)
+ggplot(minsk_data_month_diff[["Jan"]][c(50:100),]) + geom_point(aes(x = Date, y = Difference))  + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty)) +ggtitle("Difference sequence for January in Minsk with error, 1803-1853") + xlab("Year") + ylab("Temperature Difference (Celcius)") + ylim(-25,25)
 ```
 
 ![plot of chunk unnamed-chunk-14](Figures/EDA/EDA-unnamed-chunk-14-1.png)
 
 ```r
-ggplot(minsk_data_month_diff[["Jan"]][c(200:250),]) + geom_point(aes(x = Date, y = Difference))  + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty)) +ggtitle("Difference sequence for January in Minsk with error, 1953-2003") + xlab("Year") + ylab("Temperature Difference (Celcius)") + ylim(-15,15)
+ggplot(minsk_data_month_diff[["Jan"]][c(200:250),]) + geom_point(aes(x = Date, y = Difference))  + geom_errorbar(aes(x = Date, y = Difference, ymin=Difference-DifferenceUncertainty, ymax=Difference+DifferenceUncertainty)) +ggtitle("Difference sequence for January in Minsk with error, 1953-2003") + xlab("Year") + ylab("Temperature Difference (Celcius)") + ylim(-25,25)
 ```
 
 ![plot of chunk unnamed-chunk-14](Figures/EDA/EDA-unnamed-chunk-14-2.png)
 
+As we can now see, the later difference values yield greatly reduced error bounds.
+
+
+
 ### Hypothesis Testing
 
-Now that we have our transformed difference sequence (X<sub>1</sub>,X<sub>2</sub>,...,X<sub>N</sub>), I will divide by the empirical standard deviation and test the following hypothesis.
+Now that we have our transformed difference sequences (X<sub>1</sub>,X<sub>2</sub>,...,X<sub>N</sub>) for each month, I will divide by the empirical standard deviation and test the following hypothesis:
 
-* H<sub>0</sub>: X<sub>1</sub>,...,X<sub>N</sub>$ ~ i.i.d normal(0,1)
-* H<sub>1</sub>: X<sub>1</sub>,...,X<sub>N</sub>$ ~ i.i.d normal(&mu;,1)   where &mu; > 0
+* H<sub>0</sub>: X<sub>1</sub>,...,X<sub>N</sub> ~ i.i.d normal(0,1)
+* H<sub>1</sub>: X<sub>1</sub>,...,X<sub>N</sub> ~ i.i.d normal(&mu;,1)   where &mu; > 0
 
-We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A in the appendix. With my data split into months, I can gather 12 p-values per year of data.
+Our null hypothesis is that the temperature has remained constant, and the alternative is that there has been an overall (but unspecified) increase in temperature. This is a one-tailed test, as our aim is to detect a positive increase in temperature change.
+
+We want our test statistic here to be the most powerful possible (smallest type II error rate), which by the Neyman-Pearson Lemma is equivelant the mean of the difference sequence. For a proof of this, please see Section A of the Appendix. With my data split into months, I can gather 12 p-values per year of data.
 
 Firstly to standardise the sequence:
 
@@ -303,6 +309,7 @@ head(minsk_data_month_diff[["Jan"]])
 ```
 And to obtain p-values:
 
+
 ```r
 p_values <- data.frame(Location=character(), JanPVal=integer(), FebPVal=integer(), MarPVal=integer(), AprPVal=integer(), MayPVal=integer(), JunPVal=integer(), JulPVal=integer(), AugPVal=integer(), SepPVal=integer(), OctPVal=integer(), NovPVal=integer(), DecPVal=integer(), stringsAsFactors = FALSE)
 pval_calculator_minsk <- function(mon){
@@ -323,4 +330,17 @@ p_values
 ## 1 0.477493564579728 0.484464615006393 0.49605084205147 0.467720525267789
 ##             DecPVal
 ## 1 0.480465612671691
+```
+For a single hypothesis test, the significance level &alpha; is normally chosen to be 0.05. This results in the type 1 error rate (the probability of a rejecting a true null hypothesis) being kept at 5%. However, with multiple tests, we must use a more conservative significance level in order to control the Family Wise Error Rate (the probability of rejecting at least one true null hypothesis). 
+
+
+Latex Tests
+
+Inline
+$`\sqrt{2}`$
+
+Environment
+
+```math
+\sqrt{2}
 ```
