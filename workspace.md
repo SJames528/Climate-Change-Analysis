@@ -137,13 +137,13 @@ We can create some plots to observe initial trends in the data
 
 
 ```r
-plot(minsk_data[, c("dt","AverageTemperature")],type="l",main="Average Temperature in Minsk")
+ggplot() + geom_line(data = minsk_data, aes(x= dt, y = AverageTemperature), alpha=0.7) + ggtitle("Monthly Average Temperature in Minsk, from 1753 to 2009") + xlab("Time") + ylab("Average Temperature (Celcius)")
 ```
 
 ![plot of chunk unnamed-chunk-8](Figures/EDA/EDA-unnamed-chunk-8-1.png)
 
 ```r
-plot(minsk_data[, c("dt","AverageTemperatureUncertainty")],type="l",main="Uncertainty of Average Temperature Reading in Minsk")
+ggplot() + geom_line(data = minsk_data, aes(x= dt, y = AverageTemperatureUncertainty), alpha=0.7) + ggtitle("Uncertainty in Monthly Average Temperature data") + xlab("Time") + ylab("Uncertainty (Celcius)")
 ```
 
 ![plot of chunk unnamed-chunk-8](Figures/EDA/EDA-unnamed-chunk-8-2.png)
@@ -331,16 +331,18 @@ p_values
 ##             DecPVal
 ## 1 0.480465612671691
 ```
-For a single hypothesis test, the significance level &alpha; is normally chosen to be 0.05. This results in the type 1 error rate (the probability of a rejecting a true null hypothesis) being kept at 5%. However, with multiple tests, we must use a more conservative significance level in order to control the Family Wise Error Rate (the probability of rejecting at least one true null hypothesis). 
+These p-values are large, well above any significance threshold we are likely to set. However, we have a good opportunity to discuss &alpha;-correction:
 
+For a single hypothesis test, the significance level &alpha; is normally chosen to be 0.05. This results in the type 1 error rate (the probability of a rejecting a true null hypothesis) being kept at 5%.
 
-Latex Tests
+However, with multiple tests, the probabilities are compounded. For example, if our analysis comprised of 20 hypotheses, we can always expect to reject one true null when using a significance level of &alpha;=0.05. We must be focussed on controlling the Family Wise Error Rate (the probability of rejecting at least one true null hypothesis). We can calculate how this value changes under any given individual significance level &alpha;, when we have &N; total hypotheses:
 
-Inline
-$`\sqrt{2}`$
+![equation1](Figures/EDA/equation_1.png)
 
-Environment
+Assuming &k; out of &N; null hypotheses are true (where &k;&ge;1):
 
-```math
-\sqrt{2}
-```
+![equation2](Figures/EDA/equation_2.png)
+
+And hence the FWER &ge; &alpha; for any given significance level. Therefore, choosing the standard level &alpha;=0.05 actually results in a greater collective error rate, so we must select &alpha; more conservatively in order to keep the Family Wise Error Rate at 5%.
+
+The simplest method of controlling the FWER is the Bonferroni Correction at a level of &beta;, which means choosing a general significance level &alpha;=&beta;/&N; where &N; is the number of seperate tests, which in our case (&N;=12) means &alpha;&asymp;0.0042.
